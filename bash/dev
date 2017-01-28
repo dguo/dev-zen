@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [ -x "dev" ] && [ -f "dev" ]
+then
+    ./dev "$@"
+else
+    echo "There is no executable \"dev\" script to run."
+fi
