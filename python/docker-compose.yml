@@ -1,0 +1,7 @@
+version: '2'
+
+services:
+  dev-zen-py:
+    build: .
+    volumes:
+      - .:/usr/src/dev_zen

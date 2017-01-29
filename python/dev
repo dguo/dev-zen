@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import argparse
+from subprocess import call
+import sys
+
+def up(_):
+    try:
+        # Workaround for egg-info being wiped out by the volume mount
+        # http://stackoverflow.com/q/31365864
+        call(['docker-compose', 'run', 'dev-zen-py', 'bash', '-c',
+              'pip install --editable .'])
+        call(['docker-compose', 'run', 'dev-zen-py'])
+    except OSError:
+        print('Please install Docker and Docker Compose.', file=sys.stderr)
+
+def down(_):
+    try:
+        call(['docker-compose', 'down', '--remove-orphans', '--rmi', 'local'])
+    except OSError:
+        print('Please install Docker and Docker Compose.', file=sys.stderr)
+
+def lint(_):
+    rc = call(['docker-compose', 'run', 'dev-zen-py', 'bash', '-c',
+               'shopt -s globstar && pylint -rn ./**/*.py dev'])
+    exit(rc)
+
+def test(_):
+    rc = call(['docker-compose', 'run', 'dev-zen-py', 'bash', '-c', 'pytest'])
+    exit(rc)
+
+def package(_):
+    rc = call(['docker-compose', 'run', 'dev-zen-py', 'bash', '-c',
+               'python setup.py sdist bdist_wheel --universal'])
+    exit(rc)
+
+def publish(_):
+    rc = call(['docker-compose', 'run', 'dev-zen-py', 'bash', '-c',
+               'twine upload dist/*'])
+    exit(rc)
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(title='subcommands')
+
+    parser_up = subparsers.add_parser('up',
+                                      help='bring up a development enviroment')
+    parser_up.set_defaults(func=up)
+
+    parser_down = subparsers.add_parser('down',
+                                        help=('bring down the development '
+                                              'environment, and clean up'))
+    parser_down.set_defaults(func=down)
+
+    parser_lint = subparsers.add_parser('lint', help='lint the code')
+    parser_lint.set_defaults(func=lint)
+
+    parser_test = subparsers.add_parser('test', help='test the code')
+    parser_test.set_defaults(func=test)
+
+    parser_package = subparsers.add_parser('package',
+                                           help='create packages for PyPI')
+    parser_package.set_defaults(func=package)
+
+    parser_publish = subparsers.add_parser('publish',
+                                           help='publish to PyPI')
+    parser_publish.set_defaults(func=publish)
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+    args = parser.parse_args()
+    args.func(args)
+
+if __name__ == '__main__':
+    main()
