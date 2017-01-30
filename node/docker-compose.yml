@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  dev-zen-js:
+    build: .
+    volumes:
+      - .:/usr/src/dev_zen
+      - ../tests:/usr/src/tests

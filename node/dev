@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import argparse
+from subprocess import call
+import sys
+
+def up(_):
+    try:
+        call(['docker-compose', 'run', 'dev-zen-js', 'bash', '-c',
+              'npm link && bash'])
+    except OSError:
+        print('Please install Docker and Docker Compose.', file=sys.stderr)
+
+def down(_):
+    try:
+        call(['docker-compose', 'down', '--remove-orphans', '--rmi', 'local'])
+    except OSError:
+        print('Please install Docker and Docker Compose.', file=sys.stderr)
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(title='subcommands')
+
+    parser_up = subparsers.add_parser('up',
+                                      help='bring up a development enviroment')
+    parser_up.set_defaults(func=up)
+
+    parser_down = subparsers.add_parser('down',
+                                        help=('bring down the development '
+                                              'environment, and clean up'))
+    parser_down.set_defaults(func=down)
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+    args = parser.parse_args()
+    args.func(args)
+
+if __name__ == '__main__':
+    main()
