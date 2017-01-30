@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+if File.file?('./dev') && File.executable?('./dev')
+  exec('./dev ' + ARGV.join(' '))
+else
+  puts 'There is no executable dev script to run.'
+end

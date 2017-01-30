@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+# https://ericrafaloff.com/rubys-optionparser-is-all-you-need/
+require 'optparse'
+
+subcommands = {
+  '_none' => {
+    :opts => OptionParser.new do |opts|
+      opts.banner = 'Usage: ./dev [-h] [subcommand]'
+    end
+  },
+  'up' => {
+    :opts => OptionParser.new do |opts|
+      opts.banner = 'Bring up the development environment'
+    end,
+    :call => lambda {
+      exec('docker-compose', 'run', 'dev-zen-rb')
+    }
+  },
+  'down' => {
+    :opts => OptionParser.new do |opts|
+      opts.banner = 'Bring down the development environment'
+    end,
+    :call => lambda {
+      exec('docker-compose', 'down', '--remove-orphans', '--rmi', 'local')
+    }
+  }
+}
+
+subcommands['_none'][:opts].order!
+subcommand = subcommands[ARGV.shift]
+
+if subcommand
+  subcommand[:opts].order!
+  subcommand[:call].call()
+else
+  puts subcommands['_none'][:opts].help
+end
