@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+set -e
+
+until ( [ -x "dev" ] && [ -f "dev" ] ) || [ $PWD = "/" ]
+do
+    cd ..
+done
+
 if [ -x "dev" ] && [ -f "dev" ]
 then
     ./dev "$@"
